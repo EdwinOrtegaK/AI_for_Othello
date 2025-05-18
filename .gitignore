@@ -1,0 +1,38 @@
+# Ignorar carpetas de caché de Python
+__pycache__/
+*/__pycache__/
+**/__pycache__/
+
+# Archivos compilados de Python
+*.py[cod]
+*.pyo
+
+# Archivos de entorno virtual (ajusta el nombre si usas otro)
+venv/
+.env/
+.venv/
+
+# Archivos temporales de VSCode, PyCharm, etc.
+.vscode/
+.idea/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Salida de pruebas o compilación
+*.log
+*.out
+*.tmp
+
+# Archivos creados por pytest o coverage
+.cache/
+coverage.*
+htmlcov/
+*.cover
+*.pyc
+
+# Entorno editable con setuptools
+*.egg-info/
+dist/
+build/
