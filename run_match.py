@@ -6,6 +6,7 @@ from src.game_engine.othello import apply_move, game_over, winner
 from src.ai.minimax import get_best_move
 
 board = initial_board()
+print_board(board) 
 turn = -1   # negras inician
 
 TIME_LIMIT = 2.8         # segundos asignados a la IA
