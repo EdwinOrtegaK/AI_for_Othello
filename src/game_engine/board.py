@@ -23,7 +23,7 @@ def copy_board(board):
 
 def print_board(board):
     """Imprime el tablero en consola (útil para debug)."""
-    symbols = {WHITE: "○", BLACK: "●", EMPTY: "."}
+    symbols = {WHITE: "●", BLACK: "○", EMPTY: "."}
     for row in board:
         print(" ".join(symbols[cell] for cell in row))
     print()
