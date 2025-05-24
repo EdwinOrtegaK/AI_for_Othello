@@ -3,10 +3,10 @@ import time, random, statistics
 from src.game_engine.board import initial_board, print_board
 from src.game_engine.move_generator import valid_moves
 from src.game_engine.othello import apply_move, game_over, winner
-from src.ai.minimaxbasic import get_move as player_black
+from src.ai.minimaxbasic import get_move as player_white
 #from src.ai.minimax import get_best_move as player_white
 #from src.ai.mcts import get_move as player_white
-from src.ai.ai_max import get_move as player_white
+from src.ai.ai_max import get_move as player_black
 
 TIME_LIMIT = 2.8
 SAFE_FALLBACK = True
