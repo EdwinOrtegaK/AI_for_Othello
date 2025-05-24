@@ -42,6 +42,9 @@ def main():
     ia_names = list(IA_MOVES.keys())
     matches = list(itertools.combinations_with_replacement(ia_names, 2))  # IA1 == IA2 incluido
 
+    # Inicializar contador de victorias
+    victorias_por_ia = {ia: 0 for ia in ia_names}
+
     for idx, (ia1, ia2) in enumerate(matches, start=1):
         black_wins = 0
         white_wins = 0
@@ -52,38 +55,43 @@ def main():
             result = run_game(IA_MOVES[ia1], IA_MOVES[ia2])
             if result == -1:
                 black_wins += 1
+                victorias_por_ia[ia1] += 1
             elif result == 1:
                 white_wins += 1
-            else:
-                draws += 1
+                victorias_por_ia[ia2] += 1
 
         # IA2 como negras
         for _ in range(2):
             result = run_game(IA_MOVES[ia2], IA_MOVES[ia1])
             if result == -1:
-                white_wins += 1  # IA1 ahora es blanca
+                white_wins += 1  # IA1 es blanca
+                victorias_por_ia[ia1] += 1
             elif result == 1:
-                black_wins += 1  # IA1 ahora es blanca
-            else:
-                draws += 1
+                black_wins += 1  # IA1 es blanca
+                victorias_por_ia[ia2] += 1
 
         results.append({
             "Partida": f"{ia1} vs {ia2}",
             "Ganó Negras": black_wins,
             "Ganó Blancas": white_wins,
-            "Empates": draws
+            "Empates": 4 - black_wins - white_wins
         })
 
         # Mostrar progreso
-        print(f"✔ Enfrentamiento {idx}/{len(matches)} finalizado: {ia1} vs {ia2}")
+        print(f"--> Enfrentamiento {idx}/{len(matches)} finalizado: {ia1} vs {ia2}")
 
-    # Imprimir tabla
+    # Imprimir tabla de resultados
     print(f"\n{'Partida':30} | {'Ganó Negras':13} | {'Ganó Blancas':14} | {'Empates':7}")
     print("-" * 75)
     for r in results:
         print(f"{r['Partida']:30} | {r['Ganó Negras']:13} | {r['Ganó Blancas']:14} | {r['Empates']:7}")
     print(f"\nTotal de partidas jugadas: {len(matches) * 4}")
 
+    # Imprimir ranking final
+    print("\nRanking de algoritmos (por total de partidas ganadas):")
+    ranking = sorted(victorias_por_ia.items(), key=lambda x: x[1], reverse=True)
+    for idx, (ia, wins) in enumerate(ranking, start=1):
+        print(f"{idx}. {ia:15} → {wins} victorias")
 
 if __name__ == "__main__":
     main()
