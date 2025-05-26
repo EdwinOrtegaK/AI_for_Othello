@@ -1,107 +1,84 @@
 import requests
-import random
 import sys
 import time
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
-from src.ai.minimax import get_best_move
+from othello_ai import ai_move
 
-### Public IP Server
-### Testing Server
-host_name = 'http://localhost:8000'
+# BASE_URL = "http://localhost:8000"
+BASE_URL = 'https://7b679617-8c6b-4d0f-bb51-0505412c6c17.us-east-1.cloud.genez.io'
 
-class OthelloPlayer():
-
-    def __init__(self, username):
-        ### Player username
-        self.username = username
-        ### Player symbol in a match
-        self.current_symbol = 0
+if __name__ == "__main__":
 
 
-    def connect(self, session_name) -> bool:
-        """
-        :param session_name:
-        :return:
-        """
-        new_player = requests.post(host_name + '/player/new_player?session_name=' + session_name + '&player_name=' +self.username)
-        new_player = new_player.json()
-        self.session_name = session_name
-        print(new_player['message'])
-        return new_player['status'] == 200
+    if len(sys.argv) != 3:
+        print("Usage: python othello_player.py <Session Name> <Username>")
+        sys.exit(1)
 
-    def play(self) -> bool:
-        """
-        :return:
-        """
-        session_info = requests.post(host_name + '/game/game_info?session_name=' + self.session_name)
-        session_info = session_info.json()
+    tournament_name = sys.argv[1]
+    username = sys.argv[2]
 
-        while session_info['session_status'] == 'active':
-            try:
-                if (session_info['round_status'] == 'ready'):
+    print('Requesting to join!')
+    req = requests.post(f"{BASE_URL}/tournament/join", json = {
+        'username' : username 
+        , 'tournament_name' : tournament_name
+    })
 
-                    match_info = requests.post(host_name + '/player/match_info?session_name=' + self.session_name + '&player_name=' + self.username)
-                    match_info = match_info.json()
+    print(req)
 
-                    while match_info['match_status'] == 'bench':
-                        print('You are benched this round. Take a rest while you wait.')
-                        time.sleep(15)
-                        match_info = requests.post(host_name + '/player/match_info?session_name=' + self.session_name + '&player_name=' + self.username)
-                        match_info = match_info.json()
+    if req.status_code == 409: 
+        print(req.json()['detail'])
 
-                    if (match_info['match_status'] == 'active'):
-                        self.current_symbol = match_info['symbol']
-                        if self.current_symbol == 1:
-                            print('Lets play! You are the white pieces.')
-                        if self.current_symbol == -1:
-                            print('Lets play! You are the black pieces.')
+    if req.status_code == 200: 
+        print(f'Welcome to the {tournament_name} tournament. Please await while the tournament starts.')
 
+    
+        while True: 
 
-                    while (match_info['match_status'] == 'active'):
-                        turn_info = requests.post(host_name + '/player/turn_to_move?session_name=' + self.session_name + '&player_name=' + self.username + '&match_id=' +match_info['match'])
-                        turn_info = turn_info.json()
-                        while not turn_info['game_over']:
-                            if turn_info['turn']:
-                                print('SCORE ', turn_info['score'])
-                                row, col = self.AI_MOVE(turn_info['board'])
-                                move = requests.post(
-                                    host_name + '/player/move?session_name=' + self.session_name + '&player_name=' + self.username + '&match_id=' +
-                                    match_info['match'] + '&row=' + str(row) + '&col=' + str(col))
-                                move = move.json()
-                                print(move['message'])
-                            time.sleep(2)
-                            turn_info = requests.post(host_name + '/player/turn_to_move?session_name=' + self.session_name + '&player_name=' + self.username + '&match_id=' +match_info['match'])
-                            turn_info = turn_info.json()
+            active = requests.post(f"{BASE_URL}/match/active", json = {
+                'username' : username 
+                , 'tournament_name' : tournament_name
+            })
+            
+            if active.json()['is_in_active_match']: 
 
-                        print('Game Over. Winner : ' + turn_info['winner'])
-                        match_info = requests.post(host_name + '/player/match_info?session_name=' + self.session_name + '&player_name=' + self.username)
-                        match_info = match_info.json()
+                while True: 
+                    status = requests.post(f"{BASE_URL}/match/status", json = {
+                        'username' : username 
+                        , 'tournament_name' : tournament_name
+                    })
+                    
+                    if status.status_code == 404:
+                        break
+                    if status.status_code == 409: #Is not your turn 
+                        time.sleep(2)
+                    if status.status_code == 200: #Is your turn 
 
+                        response = status.json() 
+                        if response['msg'] == 'Match ended':
+                            print(f"Winner is {response['winner']}!")
+                        else:
+                            moved = False 
 
-                else:
-                    print('Waiting for match lottery...')
-                    time.sleep(5)
-
-            except requests.exceptions.ConnectionError:
-                continue
-
-            session_info = requests.post(host_name + '/game/game_info?session_name=' + self.session_name)
-            session_info = session_info.json()
-
-    def AI_MOVE(self, board):
-        return get_best_move(board, self.current_symbol, time_limit=2.8)
-
-if __name__ == '__main__':
-    script_name = sys.argv[0]
-    # The rest of the arguments start from sys.argv[1]
-    ### The first argument is the session id you want to join
-    session_id = sys.argv[1]
-    ### The second argument is the username you want to have
-    player_id = sys.argv[2]
-
-    print('Bienvenido ' + player_id + '!')
-    othello_player = OthelloPlayer(player_id)
-    if othello_player.connect(session_id):
-        othello_player.play()
-    print('Hasta pronto!')
+                            while not moved: 
+                                
+                                board = status.json()['board'] 
+                                player = status.json()['player_color']
+                                move = ai_move(board, player)
+                                print(f'Your move is {move}')
+                                if move is None:
+                                    moved = True
+                                else:
+                                    res = requests.post(f"{BASE_URL}/match/move", json={
+                                        "username" : username
+                                        , "tournament_name": tournament_name
+                                        , "x" : move[0]
+                                        , "y": move[1]
+                                    })
+                                    
+                                    if res.status_code == 409: 
+                                        print('Invalid movement!!!')
+                                    else: 
+                                        moved = True
+                            
+            else:
+                print('Await for your next match')
+                time.sleep(10)
