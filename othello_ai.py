@@ -53,4 +53,27 @@ def ai_move(board, player):
         {(r, 0) for r in range(BOARD_SIZE)} |
         {(r, 7) for r in range(BOARD_SIZE)}
     ) - CORNERS
+
+    def in_bounds(x, y):
+        return 0 <= x < 8 and 0 <= y < 8
+
+    def valid_moves(board, player):
+        opponent = -player
+        valid = []
+        for x in range(8):
+            for y in range(8):
+                if board[x][y] != 0:
+                    continue
+                for dx, dy in [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]:
+                    i, j = x + dx, y + dy
+                    found_opponent = False
+                    while in_bounds(i, j) and board[i][j] == opponent:
+                        i += dx
+                        j += dy
+                        found_opponent = True
+                    if found_opponent and in_bounds(i, j) and board[i][j] == player:
+                        valid.append((x, y))
+                        break
+        return valid
+
     return best_move
