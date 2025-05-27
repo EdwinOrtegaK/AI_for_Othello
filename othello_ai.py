@@ -76,4 +76,19 @@ def ai_move(board, player):
                         break
         return valid
 
+    def apply_move(board, player, move):
+        new_board = [row[:] for row in board]
+        x, y = move
+        new_board[x][y] = player
+        for dx, dy in [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]:
+            i, j = x + dx, y + dy
+            cells_to_flip = []
+            while in_bounds(i, j) and new_board[i][j] == -player:
+                cells_to_flip.append((i, j))
+                i += dx
+                j += dy
+            if in_bounds(i, j) and new_board[i][j] == player:
+                for fx, fy in cells_to_flip:
+                    new_board[fx][fy] = player
+        return new_board
     return best_move
