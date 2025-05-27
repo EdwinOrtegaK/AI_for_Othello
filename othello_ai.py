@@ -108,4 +108,15 @@ def ai_move(board, player):
                         score += 5
         return score
 
+    def mobility(board, color):
+        return len(valid_moves(board, color))
+
+    def super_heuristic(board, color):
+        opp = -color
+        return (
+            + stability_score(board, color) - stability_score(board, opp)
+            + 10 * (mobility(board, color) - mobility(board, opp))
+            + 1 * (sum(cell == color for row in board for cell in row) -
+                   sum(cell == opp for row in board for cell in row))
+        )
     return best_move
