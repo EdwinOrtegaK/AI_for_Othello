@@ -1,5 +1,5 @@
 import random
-
+from src.ai.ai_max import get_move   
 DIRECTIONS = [
     (-1, -1),  # UP-LEFT
     (-1, 0),   # UP
@@ -38,8 +38,7 @@ def valid_movements(board, player):
 
     return valid_moves
  
-def ai_move(board, player): 
-    valid_moves = valid_movements(board, player)
-    if valid_moves:
-        return random.choice(valid_moves)
-    return None
+# ai_move.py
+
+def ai_move(board, player):
+    return get_move(board, player)
