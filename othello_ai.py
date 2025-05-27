@@ -38,8 +38,19 @@ def valid_movements(board, player):
 
     return valid_moves
  
-def ai_move(board, player): 
-    valid_moves = valid_movements(board, player)
-    if valid_moves:
-        return random.choice(valid_moves)
-    return None
+def ai_move(board, player):
+    import time
+
+    MAX_DEPTH = 4
+    TIME_LIMIT = 2.8
+
+    BOARD_SIZE = 8
+    CORNERS = {(0,0), (0,7), (7,0), (7,7)}
+    ADJACENTS = {(0,1),(1,0),(1,1), (0,6),(1,6),(1,7), (6,0),(6,1),(7,1), (6,6),(6,7),(7,6)}
+    EDGES = (
+        {(0, c) for c in range(BOARD_SIZE)} |
+        {(7, c) for c in range(BOARD_SIZE)} |
+        {(r, 0) for r in range(BOARD_SIZE)} |
+        {(r, 7) for r in range(BOARD_SIZE)}
+    ) - CORNERS
+    return best_move
