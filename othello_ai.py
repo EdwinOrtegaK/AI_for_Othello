@@ -91,4 +91,8 @@ def ai_move(board, player):
                 for fx, fy in cells_to_flip:
                     new_board[fx][fy] = player
         return new_board
+
+    def game_over(board):
+        return not valid_moves(board, 1) and not valid_moves(board, -1)
+
     return best_move
