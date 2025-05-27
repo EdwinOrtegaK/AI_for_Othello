@@ -119,4 +119,41 @@ def ai_move(board, player):
             + 1 * (sum(cell == color for row in board for cell in row) -
                    sum(cell == opp for row in board for cell in row))
         )
+
+    def minimax(board, color, depth, alpha, beta, maximizing, root_color, start_time):
+        if depth == 0 or game_over(board) or time.perf_counter() - start_time > TIME_LIMIT:
+            return super_heuristic(board, root_color)
+
+        moves = valid_moves(board, color)
+        if not moves:
+            return minimax(board, -color, depth-1, alpha, beta, not maximizing, root_color, start_time)
+
+        if maximizing:
+            value = float('-inf')
+            for move in moves:
+                new_board = apply_move(board, color, move)
+                value = max(value, minimax(new_board, -color, depth-1, alpha, beta, False, root_color, start_time))
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
+            return value
+        else:
+            value = float('inf')
+            for move in moves:
+                new_board = apply_move(board, color, move)
+                value = min(value, minimax(new_board, -color, depth-1, alpha, beta, True, root_color, start_time))
+                beta = min(beta, value)
+                if beta <= alpha:
+                    break
+            return value
+
+    start = time.perf_counter()
+    best_value = float('-inf')
+    best_move = None
+    for move in valid_moves(board, player):
+        new_board = apply_move(board, player, move)
+        value = minimax(new_board, -player, MAX_DEPTH - 1, float('-inf'), float('inf'), False, player, start)
+        if value > best_value:
+            best_value = value
+            best_move = move
     return best_move
