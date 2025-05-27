@@ -95,4 +95,17 @@ def ai_move(board, player):
     def game_over(board):
         return not valid_moves(board, 1) and not valid_moves(board, -1)
 
+    def stability_score(board, color):
+        score = 0
+        for r in range(8):
+            for c in range(8):
+                if board[r][c] == color:
+                    if (r, c) in CORNERS:
+                        score += 25
+                    elif (r, c) in ADJACENTS:
+                        score -= 12
+                    elif (r, c) in EDGES:
+                        score += 5
+        return score
+
     return best_move
