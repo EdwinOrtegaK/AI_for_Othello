@@ -14,6 +14,8 @@ from ..game_engine import BOARD_SIZE, WHITE, BLACK
 MAX_DEPTH_START = 3       # profundidad inicial
 SAFETY_MARGIN   = 0.05    # colchón para cortar la búsqueda (segundos)
 
+TT = {}  # transposition table {hash: (depth, value)}
+
 # Conjuntos estáticos para ordenar jugadas
 CORNERS = {(0, 0), (0, 7), (7, 0), (7, 7)}
 EDGES   = (
@@ -22,6 +24,9 @@ EDGES   = (
     {(r, 0) for r in range(BOARD_SIZE)} |
     {(r, 7) for r in range(BOARD_SIZE)}
 ) - CORNERS   # quitar las esquinas que ya están en CORNERS
+
+def board_hash(board):
+    return tuple(tuple(row) for row in board)
 
 def get_best_move(board: List[List[int]],
                   color: int,
@@ -84,13 +89,23 @@ def alphabeta_root(board, color, depth, t_start, t_limit):
 def alphabeta(board, color, depth, alpha, beta,
               t_start, t_limit, maximizing, root_color):
     """Versión recursiva con poda Alpha-Beta."""
+    # TT lookup
+    h = board_hash(board)
+    cached = TT.get(h)
+    if cached and cached[0] >= depth:
+        return cached[1]
+
     # Corte por tiempo
     if time.perf_counter() - t_start > t_limit:
-        return evaluate(board, root_color)
+        val = evaluate(board, root_color)
+        TT[h] = (depth, val)
+        return val
 
     # Corte por profundidad o fin de juego
     if depth == 0 or game_over(board):
-        return evaluate(board, root_color)
+        val = evaluate(board, root_color)
+        TT[h] = (depth, val)
+        return val
 
     moves = valid_moves(board, color)
     if not moves:
@@ -114,6 +129,7 @@ def alphabeta(board, color, depth, alpha, beta,
             alpha = max(alpha, value)
             if alpha >= beta:  # poda
                 break
+        TT[h] = (depth, value)
         return value
 
     # ───── MIN ───────────────────────────────────────────────
@@ -130,4 +146,5 @@ def alphabeta(board, color, depth, alpha, beta,
             beta = min(beta, value)
             if beta <= alpha:  # poda
                 break
+        TT[h] = (depth, value)
         return value
