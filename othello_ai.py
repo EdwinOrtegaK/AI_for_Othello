@@ -1,5 +1,7 @@
 import random
-from src.ai.ai_max import get_move   
+from src.ai.minimax import get_best_move as get_move
+from src.game_engine.move_generator import valid_moves
+
 DIRECTIONS = [
     (-1, -1),  # UP-LEFT
     (-1, 0),   # UP
@@ -38,7 +40,14 @@ def valid_movements(board, player):
 
     return valid_moves
  
-# ai_move.py
+def ai_move(board, color):
+    moves = valid_moves(board, color)
+    if not moves:
+        return None
 
-def ai_move(board, player):
-    return get_move(board, player)
+    move = get_move(board, color)
+
+    if move not in moves:
+        return random.choice(moves)
+
+    return move
