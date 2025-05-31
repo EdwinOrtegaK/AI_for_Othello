@@ -6,10 +6,10 @@ La función pública es get_best_move(board, color, time_limit=2.8)
 import time
 from typing import Tuple, List
 
-from ..game_engine.move_generator import valid_moves
-from ..game_engine.othello import apply_move, game_over
-from ..heuristics import evaluate
-from ..game_engine import BOARD_SIZE, WHITE, BLACK
+from game_engine.move_generator import valid_moves
+from game_engine.othello import apply_move, game_over
+from game_engine import BOARD_SIZE, WHITE, BLACK
+from heuristics import evaluate
 
 MAX_DEPTH_START = 3       # profundidad inicial
 SAFETY_MARGIN   = 0.05    # colchón para cortar la búsqueda (segundos)
@@ -89,7 +89,7 @@ def alphabeta_root(board, color, depth, t_start, t_limit):
 def alphabeta(board, color, depth, alpha, beta,
               t_start, t_limit, maximizing, root_color):
     """Versión recursiva con poda Alpha-Beta."""
-    # TT lookup
+    # Transposition table lookup
     h = board_hash(board)
     cached = TT.get(h)
     if cached and cached[0] >= depth:
@@ -117,7 +117,6 @@ def alphabeta(board, color, depth, alpha, beta,
     # ───── MAX ───────────────────────────────────────────────
     if maximizing:
         value = float('-inf')
-        # Ordenar hijos (opcional, pero ayuda en ramas interiores)
         moves.sort(key=lambda m: ordering_score(board, m, color), reverse=True)
 
         for move in moves:
@@ -127,7 +126,7 @@ def alphabeta(board, color, depth, alpha, beta,
                                   alpha, beta, t_start, t_limit,
                                   False, root_color))
             alpha = max(alpha, value)
-            if alpha >= beta:  # poda
+            if alpha >= beta:
                 break
         TT[h] = (depth, value)
         return value
@@ -144,7 +143,7 @@ def alphabeta(board, color, depth, alpha, beta,
                                   alpha, beta, t_start, t_limit,
                                   True, root_color))
             beta = min(beta, value)
-            if beta <= alpha:  # poda
+            if beta <= alpha:
                 break
         TT[h] = (depth, value)
         return value

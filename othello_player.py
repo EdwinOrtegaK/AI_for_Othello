@@ -3,43 +3,40 @@ import sys
 import time
 
 from src.game_engine.board import print_board
-from othello_ai import ai_move
+from othello_ai import ai_move  # Asegúrate de tener esta función implementada
 
-# BASE_URL = "http://localhost:8000"
-BASE_URL = 'https://7b679617-8c6b-4d0f-bb51-0505412c6c17.us-east-1.cloud.genez.io'
+# URL del servidor backend
+BASE_URL = "https://7b679617-8c6b-4d0f-bb51-0505412c6c17.us-east-1.cloud.genez.io"
 
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
-        print("Usage: python othello_player.py <Session Name> <Username>")
+        print("Uso: python othello_player.py <NombreTorneo> <NombreUsuario>")
         sys.exit(1)
 
     tournament_name = sys.argv[1]
     username = sys.argv[2]
 
-    print('Requesting to join!')
+    print("Solicitando unirse al torneo...")
     req = requests.post(f"{BASE_URL}/tournament/join", json={
         'username': username,
         'tournament_name': tournament_name
     })
 
-    print(req)
-
     if req.status_code == 409:
-        print(req.json()['detail'])
+        print(f"⚠️ {req.json().get('detail', 'Error al unirse al torneo')}")
+        sys.exit(1)
 
     if req.status_code == 200:
-        print(f'Welcome to the {tournament_name} tournament. Please await while the tournament starts.')
+        print(f"✅ Bienvenido al torneo {tournament_name}, {username}. Esperando a que comience la partida...")
 
         while True:
-
             active = requests.post(f"{BASE_URL}/match/active", json={
                 'username': username,
                 'tournament_name': tournament_name
             })
 
-            if active.json()['is_in_active_match']:
-
+            if active.json().get('is_in_active_match'):
                 while True:
                     status = requests.post(f"{BASE_URL}/match/status", json={
                         'username': username,
@@ -47,50 +44,46 @@ if __name__ == "__main__":
                     })
 
                     if status.status_code == 404:
-                        break
-                    if status.status_code == 409:  # Is not your turn
-                        time.sleep(2)
-                    if status.status_code == 200:  # Is your turn
-
+                        break  # La partida terminó
+                    elif status.status_code == 409:
+                        time.sleep(2)  # No es tu turno
+                    elif status.status_code == 200:
                         response = status.json()
+
                         if response['msg'] == 'Match ended':
-                            print(f"Winner is {response['winner']}!")
+                            print(f"🏁 La partida ha terminado. Ganador: {response['winner']}")
+                            break
                         else:
-                            moved = False
+                            board = response['board']
+                            player = response['player_color']
+                            print("\n====================================")
+                            print(f"Turno de {'Negro ○' if player == -1 else 'Blanco ●'}")
+                            print("Tablero actual:")
+                            print_board(board)
 
-                            while not moved:
+                            start = time.perf_counter()
+                            move = ai_move(board, player)
+                            elapsed = time.perf_counter() - start
+                            print(f"Movimiento elegido: {move} (en {elapsed:.2f} segundos)")
+                            print("====================================")
 
-                                board = response['board']
-                                player = response['player_color']
+                            if move is None:
+                                print("No hay movimientos posibles. Turno pasado.")
+                                break
+                            else:
+                                res = requests.post(f"{BASE_URL}/match/move", json={
+                                    "username": username,
+                                    "tournament_name": tournament_name,
+                                    "x": move[0],
+                                    "y": move[1]
+                                })
 
-                                print("\n====================================")
-                                print(f"Turno de {'Negro ○' if player == -1 else 'Blanco ●'}")
-                                print("Tablero actual:")
-                                print_board(board)
-
-                                start = time.perf_counter()
-                                move = ai_move(board, player)
-                                elapsed = time.perf_counter() - start
-
-                                print(f"Movimiento elegido: {move} en {elapsed:.2f} segundos")
-                                print("====================================")
-
-                                if move is None:
-                                    print("Sin movimientos posibles. Pasando turno.")
-                                    moved = True
+                                if res.status_code == 409:
+                                    print("⚠️ ¡Movimiento inválido!")
                                 else:
-                                    res = requests.post(f"{BASE_URL}/match/move", json={
-                                        "username": username,
-                                        "tournament_name": tournament_name,
-                                        "x": move[0],
-                                        "y": move[1]
-                                    })
-
-                                    if res.status_code == 409:
-                                        print('¡Movimiento inválido!')
-                                    else:
-                                        moved = True
+                                    print("✅ Movimiento realizado.")
+                                    break  
 
             else:
-                print('Await for your next match')
+                print("Esperando tu siguiente partida...")
                 time.sleep(10)

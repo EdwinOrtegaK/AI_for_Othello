@@ -3,9 +3,9 @@ Minimax básico sin poda.
 Interfaz: get_move(board, color)
 """
 
-from ..game_engine.move_generator import valid_moves
-from ..game_engine.othello import apply_move, game_over
-from ..heuristics import evaluate
+from game_engine.move_generator import valid_moves
+from game_engine.othello import apply_move, game_over
+from heuristics import evaluate
 from typing import List, Tuple
 
 MAX_DEPTH = 3  # Profundidad fija para limitar tiempo (ajustable)

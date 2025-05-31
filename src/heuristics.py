@@ -3,23 +3,23 @@ Funciones de evaluación de tablero para Othello.
 Se usan valores basados en literatura clásica.
 """
 
-from .game_engine import BOARD_SIZE, WHITE, BLACK
-from .game_engine.move_generator import valid_moves
+from src.game_engine import BOARD_SIZE, WHITE, BLACK
+from src.game_engine.move_generator import valid_moves
 
 # Pesos heurísticos
 CORNER_WEIGHT      = 25
-ADJACENT_PENALTY  = -12
+ADJACENT_PENALTY   = -12
 EDGE_WEIGHT        = 5
 MOBILITY_WEIGHT    = 10
 PIECE_DIFF_WEIGHT  = 1
 
 # Coordenadas de esquinas y adyacentes
-CORNERS = {(0,0), (0,7), (7,0), (7,7)}
+CORNERS = {(0, 0), (0, 7), (7, 0), (7, 7)}
 ADJACENTS = {
-    (0,1),(1,0),(1,1),
-    (0,6),(1,6),(1,7),
-    (6,0),(6,1),(7,1),
-    (6,6),(6,7),(7,6)
+    (0, 1), (1, 0), (1, 1),
+    (0, 6), (1, 6), (1, 7),
+    (6, 0), (6, 1), (7, 1),
+    (6, 6), (6, 7), (7, 6)
 }
 EDGES = (
     {(0, c) for c in range(BOARD_SIZE)} |

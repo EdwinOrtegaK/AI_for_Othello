@@ -1,16 +1,14 @@
 import random
-from src.ai.minimax import get_best_move as get_move
+from src.ai.td_agent import get_move, load_values
 from src.game_engine.move_generator import valid_moves
 
+# Cargamos el aprendizaje entrenado
+load_values("td_vs_ai_max.pkl")
+
 DIRECTIONS = [
-    (-1, -1),  # UP-LEFT
-    (-1, 0),   # UP
-    (-1, 1),   # UP-RIGHT
-    (0, -1),   # LEFT
-    (0, 1),    # RIGHT
-    (1, -1),   # DOWN-LEFT
-    (1, 0),    # DOWN
-    (1, 1)     # DOWN-RIGHT
+    (-1, -1), (-1, 0), (-1, 1),
+    (0, -1),          (0, 1),
+    (1, -1),  (1, 0), (1, 1)
 ]
 
 def in_bounds(x, y):
@@ -18,7 +16,7 @@ def in_bounds(x, y):
 
 def valid_movements(board, player):
     opponent = -player
-    valid_moves = []
+    valid_moves_list = []
 
     for x in range(8):
         for y in range(8):
@@ -35,11 +33,11 @@ def valid_movements(board, player):
                     found_opponent = True
 
                 if found_opponent and in_bounds(i, j) and board[i][j] == player:
-                    valid_moves.append((x, y))
+                    valid_moves_list.append((x, y))
                     break
 
-    return valid_moves
- 
+    return valid_moves_list
+
 def ai_move(board, color):
     moves = valid_moves(board, color)
     if not moves:

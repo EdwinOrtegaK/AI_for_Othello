@@ -2,12 +2,13 @@ import time
 import math
 import random
 from collections import defaultdict
-from ..game_engine.move_generator import valid_moves
-from ..game_engine.othello import apply_move, game_over, winner
-from ..game_engine import BLACK, WHITE
+
+from game_engine.move_generator import valid_moves
+from game_engine.othello import apply_move, game_over, winner
+from game_engine import BLACK, WHITE
 
 TIME_LIMIT = 2.8
-UCT_C = 1.41  # Parámetro de exploración (sqrt(2) por defecto)
+UCT_C = 1.41  # Parámetro de exploración (por defecto: raíz de 2)
 
 
 class MCTSNode:

@@ -1,14 +1,19 @@
-from ..game_engine.move_generator import valid_moves
-from ..game_engine.othello import apply_move, game_over
-from ..heuristics import evaluate
-from ..game_engine import BOARD_SIZE
 import time
+from src.game_engine.move_generator import valid_moves
+from src.game_engine.othello import apply_move, game_over
+from src.game_engine import BOARD_SIZE
+from src.heuristics import evaluate  # Solo si realmente estás usando `evaluate`
 
 MAX_DEPTH = 4
 TIME_LIMIT = 2.8
 
-CORNERS = {(0,0), (0,7), (7,0), (7,7)}
-ADJACENTS = {(0,1),(1,0),(1,1), (0,6),(1,6),(1,7), (6,0),(6,1),(7,1), (6,6),(6,7),(7,6)}
+CORNERS = {(0, 0), (0, 7), (7, 0), (7, 7)}
+ADJACENTS = {
+    (0, 1), (1, 0), (1, 1),
+    (0, 6), (1, 6), (1, 7),
+    (6, 0), (6, 1), (7, 1),
+    (6, 6), (6, 7), (7, 6)
+}
 EDGES = (
     {(0, c) for c in range(BOARD_SIZE)} |
     {(7, c) for c in range(BOARD_SIZE)} |
@@ -37,8 +42,10 @@ def super_heuristic(board, color):
     return (
         + stability_score(board, color) - stability_score(board, opp)
         + 10 * (mobility(board, color) - mobility(board, opp))
-        + 1  * (sum(cell == color for row in board for cell in row) -
-                sum(cell == opp for row in board for cell in row))
+        + 1 * (
+            sum(cell == color for row in board for cell in row)
+            - sum(cell == opp for row in board for cell in row)
+        )
     )
 
 def minimax(board, color, depth, alpha, beta, maximizing, root_color, start_time):
@@ -47,13 +54,13 @@ def minimax(board, color, depth, alpha, beta, maximizing, root_color, start_time
 
     moves = valid_moves(board, color)
     if not moves:
-        return minimax(board, -color, depth-1, alpha, beta, not maximizing, root_color, start_time)
+        return minimax(board, -color, depth - 1, alpha, beta, not maximizing, root_color, start_time)
 
     if maximizing:
         value = float('-inf')
         for move in moves:
             new_board = apply_move(board, color, move)
-            value = max(value, minimax(new_board, -color, depth-1, alpha, beta, False, root_color, start_time))
+            value = max(value, minimax(new_board, -color, depth - 1, alpha, beta, False, root_color, start_time))
             alpha = max(alpha, value)
             if alpha >= beta:
                 break
@@ -62,7 +69,7 @@ def minimax(board, color, depth, alpha, beta, maximizing, root_color, start_time
         value = float('inf')
         for move in moves:
             new_board = apply_move(board, color, move)
-            value = min(value, minimax(new_board, -color, depth-1, alpha, beta, True, root_color, start_time))
+            value = min(value, minimax(new_board, -color, depth - 1, alpha, beta, True, root_color, start_time))
             beta = min(beta, value)
             if beta <= alpha:
                 break
@@ -74,7 +81,7 @@ def get_move(board, color):
     best_move = None
     for move in valid_moves(board, color):
         new_board = apply_move(board, color, move)
-        value = minimax(new_board, -color, MAX_DEPTH-1, float('-inf'), float('inf'), False, color, start)
+        value = minimax(new_board, -color, MAX_DEPTH - 1, float('-inf'), float('inf'), False, color, start)
         if value > best_value:
             best_value = value
             best_move = move
